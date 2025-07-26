@@ -7,10 +7,20 @@ const mongoose = require('mongoose');
 const connectDB = require('./db/db'); // Adjust the path as necessary
 const formRoutes = require('./routes/form_route'); // Adjust the path as necessary
 const Form = require('./models/form'); // Adjust the path as necessary
+const session = require('express-session');
+
+
 
 //
 const app = express();
 connectDB(); // Connect to MongoDB
+app.use(session({
+  secret: 'shahrukhkhan',  // use a secure, random string
+  resave: false,
+  saveUninitialized: false,
+  cookie: { secure: false } // set to true only if using HTTPS
+}));
+
 
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json()); // add this line
@@ -49,20 +59,7 @@ app.post('/submit', async (req, res) => {
       from: 'abhishekkange@gmail.com',
       to: ['abhishekkange00@gmail.com', 'sales@cirqubesystems.com'],
       subject: 'New Internship Application',
-      html: `
-        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto; padding: 20px; border: 1px solid #ddd; border-radius: 10px;">
-          <h2 style="text-align: center; color: #4F46E5;">📄 Internship Application</h2>
-          <table style="width: 100%; border-collapse: collapse;">
-            ${Object.entries(formData).map(([key, value]) => `
-              <tr>
-                <td style="padding: 8px; font-weight: bold;">${key.replace(/_/g, ' ')}</td>
-                <td style="padding: 8px;">${value || 'N/A'}</td>
-              </tr>
-            `).join('')}
-          </table>
-          <p style="text-align: center; margin-top: 20px; color: #888;">Cirqube Internship Application System</p>
-        </div>
-      `
+      text: `New application received: find it at https:careers.cirqubesystems.com/admin`,
     };
 
     transporter.sendMail(mailOptions, (error, info) => {
