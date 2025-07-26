@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Admin Dashboard</title>
+  <link href="https://cdn.jsdelivr.net/npm/@materializecss/materialize@1.0.0/dist/css/materialize.min.css" rel="stylesheet">
+</head>
+<body>
+  <div class="container">
+    <h4 class="center-align">Internship Applications</h4>
+    <table class="highlight centered responsive-table">
+      <thead>
+        <tr>
+          <th>Full Name</th>
+          <th>Email</th>
+          <th>Phone</th>
+          <th>LinkedIn</th>
+          <th>Skills</th>
+          <th>Grad Year</th>
+          <th>Work Mode</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% forms.forEach(form => { %>
+          <tr>
+            <td><%= form.full_name %></td>
+            <td><%= form.email %></td>
+            <td><%= form.phone %></td>
+            <td><a href="<%= form.linkedin %>" target="_blank">Profile</a></td>
+            <td><%= form.skills %></td>
+            <td><%= form.grad_year %></td>
+            <td><%= form.work_mode %></td>
+          </tr>
+        <% }); %>
+      </tbody>
+    </table>
+  </div>
+</body>
+</html>
