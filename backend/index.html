@@ -124,7 +124,7 @@
           <select name="work_mode" class="w-full border border-gray-300 p-3 rounded-lg shadow-sm">
             <option>Remote</option>
             <option>In-Office</option>
-            <option>Hybrid</option>
+            <option>Hybrid / WFH</option>
           </select>
         </div>
       </div>
@@ -177,14 +177,16 @@
       })
       .then(response => {
         if (response.ok) {
-          window.location.href = 'page.html';
+          alert("Application submitted successfully!  Thank you for applying to Cirqube System.");
+          form.reset(); // Reset the form after successful submission
         } else {
           alert(response.statusText || "There was an error submitting your application. Please try again.");
         }
       })
+
       .catch(error => {
         console.error("Error submitting form:", error);
-        alert("There was an error. Please try again later.");
+        alert("There was an error. Please try again later. ");
       });
     }
   </script>
