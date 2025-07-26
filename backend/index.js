@@ -27,7 +27,7 @@ app.post('/submit', (req, res) => {
 
   const mailOptions = {
     from: 'abhishekkange@gmail.com',
-    to: 'abhishekkange00@gmail.com',
+    to: ['abhishekkange00@gmail.com', 'sales@cirqubesystems.com'], // send to both
     subject: 'New Internship Application',
     text: JSON.stringify(formData)
   };
