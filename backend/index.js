@@ -6,6 +6,7 @@ const path = require('path');
 const mongoose = require('mongoose');
 const connectDB = require('./db/db'); // Adjust the path as necessary
 const formRoutes = require('./routes/form_route'); // Adjust the path as necessary
+const Form = require('./models/form'); // Adjust the path as necessary
 
 //
 const app = express();
