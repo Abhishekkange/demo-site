@@ -4,11 +4,11 @@ const bodyParser = require('body-parser');
 const path = require('path');
 const mongoose = require('mongoose');
 const connectDB = require('./db/db');
-const Form = require('./models/form'); // Ensure your model supports resumeUrl
+const Form = require('./models/form');
 const session = require('express-session');
 const multer = require('multer');
 const cloudinary = require('cloudinary').v2;
-const fs = require('fs');
+const streamifier = require('streamifier');
 
 const app = express();
 
@@ -35,10 +35,12 @@ app.use(bodyParser.json());
 app.use(express.static(path.join(__dirname, 'public')));
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
+
 app.use('/',require('./routes/form_route'));
 
-// ==== 4. Multer Setup ====
-const upload = multer({ dest: 'uploads/' });
+// ==== 4. Multer Memory Storage ====
+const storage = multer.memoryStorage();
+const upload = multer({ storage: storage });
 
 // ==== 5. Routes ====
 app.get('/', (req, res) => {
@@ -50,31 +52,32 @@ app.post('/submit', upload.single('resume'), async (req, res) => {
   const resumeFile = req.file;
 
   try {
-    // === 1. Upload resume to Cloudinary ===
-    const result = await cloudinary.uploader.upload(resumeFile.path, {
-      resource_type: 'auto',
-      folder: 'resumes',
-      type: 'upload',
-    });
+    // Upload buffer directly to Cloudinary
+    const streamUpload = (buffer) => {
+      return new Promise((resolve, reject) => {
+        let stream = cloudinary.uploader.upload_stream(
+          { resource_type: "auto", folder: "resumes" },
+          (error, result) => {
+            if (result) resolve(result);
+            else reject(error);
+          }
+        );
+        streamifier.createReadStream(buffer).pipe(stream);
+      });
+    };
 
-    console.log('Resume uploaded to Cloudinary:', result.secure_url);
+    const result = await streamUpload(resumeFile.buffer);
 
-    // Optional: remove local file
-    fs.unlinkSync(resumeFile.path);
-
-    // === 2. Save to MongoDB ===
+    // Save to MongoDB
     const newForm = new Form({
       ...formData,
       resumeUrl: result.secure_url,
       resumeFileName: resumeFile.originalname,
     });
 
-    console.log("resumeUrl:", newForm.resumeUrl);
-
     await newForm.save();
-    console.log('Form data saved to MongoDB');
 
-    // === 3. Send Email ===
+    // Email notification
     const transporter = nodemailer.createTransport({
       service: 'Gmail',
       auth: {
@@ -87,60 +90,17 @@ app.post('/submit', upload.single('resume'), async (req, res) => {
       from: 'abhishekkange@gmail.com',
       to: ['abhishekkange00@gmail.com', 'sales@cirqubesystems.com'],
       subject: 'New Internship Application',
-      text: `A new application was received:\n\nName: ${formData.full_name}\nEmail: ${formData.email}\nPhone: ${formData.phone}\nMessage: ${formData.message}\n\nResume: ${result.secure_url}\n\nView all applications at: https://careers.cirqubesystems.com/admin`,
+      text: `A new application was received:\n\nName: ${formData.full_name}\nEmail: ${formData.email}\nPhone: ${formData.phone}\n\nResume: ${result.secure_url}\n\nView all applications at: https://careers.cirqubesystems.com/admin`,
     };
 
-    transporter.sendMail(mailOptions, (error, info) => {
-      if (error) {
-        console.error('Email failed:', error);
-        return res.status(500).send('Form saved, but email failed to send.');
-      }
-      res.status(200).send(`
-        <!DOCTYPE html>
-        <html lang="en">
-        <head>
-          <meta charset="UTF-8" />
-          <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-          <title>Thank You</title>
-          <style>
-            body {
-              font-family: Arial, sans-serif;
-              background-color: #f7fafc;
-              display: flex;
-              justify-content: center;
-              align-items: center;
-              height: 100vh;
-              margin: 0;
-            }
-            .thank-you {
-              background: white;
-              padding: 40px;
-              border-radius: 12px;
-              box-shadow: 0 5px 20px rgba(0,0,0,0.1);
-              text-align: center;
-            }
-            h1 {
-              color: #2d3748;
-            }
-            p {
-              color: #4a5568;
-              margin-top: 10px;
-              font-size: 18px;
-            }
-          </style>
-        </head>
-        <body>
-          <div class="thank-you">
-            <h1>Thank You for Submitting Your Details!</h1>
-            <p>Our team will get back to you shortly.</p>
-          </div>
-        </body>
-        </html>
-      `);    });
+    transporter.sendMail(mailOptions);
+
+    // Send Thank You Page
+    res.status(200).sendFile(path.join(__dirname, 'public', 'submitted.html'));
 
   } catch (error) {
-    console.error('Error processing form:', error);
-    res.status(500).send('Something went wrong. Try again later.');
+    console.error('Error submitting form:', error);
+    res.status(500).send('Submission failed.');
   }
 });
 
