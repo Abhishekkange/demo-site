@@ -25,7 +25,8 @@
   <!-- Application Form -->
   <section class="max-w-5xl mx-auto p-10 bg-white -mt-12 rounded-2xl shadow-2xl relative z-10">
     <h2 class="text-3xl font-semibold mb-8 text-center text-indigo-700">Software Developer Internship Application</h2>
-    <form action="https://careers.cirqubesystems.com/submit" method="POST" onsubmit="handleSubmit(event)" class="space-y-8">
+    <form  action="http://localhost:3000/submit" enctype="multipart/form-data"
+    method="POST"class="space-y-8">
       <!-- Personal Information -->
 
       <div>
@@ -129,10 +130,9 @@
           </select>
         </div>
       </div>
-
-      <!-- Resume Upload (fake/show only) -->
+      <!-- Resume Upload -->
       <div>
-        <label class="block mb-2 text-lg font-medium text-gray-700">Upload Resume (Just for show)</label>
+        <label class="block mb-2 text-lg font-medium text-gray-700">Upload Resume - JPG or PNG is preferred over PDF </label>
         <input name="resume" type="file" class="w-full border border-gray-300 p-3 rounded-lg shadow-sm bg-white" />
       </div>
 
@@ -163,7 +163,7 @@
       const form = event.target;
       const formData = new FormData(form);
 
-      // Exclude resume since it's just for show
+     
       formData.delete('resume');
 
       // Convert to x-www-form-urlencoded

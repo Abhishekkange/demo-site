@@ -6,6 +6,7 @@ const applicationSchema = new mongoose.Schema({
   phone: { type: String },
   contact_number: { type: String },
   linkedin: { type: String },
+  resumeUrl: { type: String }, // Ensure this field is required
   github: { type: String },
   portfolio: { type: String },
   qualification: { type: String },

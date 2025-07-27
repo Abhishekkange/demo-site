@@ -17,6 +17,7 @@
           <th>Skills</th>
           <th>Grad Year</th>
           <th>Work Mode</th>
+          <th>Resume</th>
         </tr>
       </thead>
       <tbody>
@@ -29,6 +30,13 @@
             <td><%= form.skills %></td>
             <td><%= form.grad_year %></td>
             <td><%= form.work_mode %></td>
+            <td>
+              <% if (form.resumeUrl) { %>
+                <a class="btn-small blue" href="<%= form.resumeUrl %>" target="_blank">View Resume</a>
+              <% } else { %>
+                <span class="red-text">No Resume</span>
+              <% } %>
+            </td>
           </tr>
         <% }); %>
       </tbody>
